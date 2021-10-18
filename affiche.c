@@ -48,9 +48,10 @@ affiche_IP(const struct iphdr *ip, int v){
     afficheIPaddr(ip->saddr);
     printf("|\n|destination addresse = ");
     afficheIPaddr(ip->daddr);
-    printf("|\n");
-    
-      
-
+    printf("|\n");  
   }
+}
+
+void affiche_ARPR(const struct arp *arp){
+  return;
 }
