@@ -1,0 +1,10 @@
+{
+    "makefile.extensionOutputFolder": "./.vscode",
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/florent/analyseur-reseau",
+            "binaryPath": "/home/florent/analyseur-reseau/mydump",
+            "binaryArgs": []
+        }
+    ]
+}

@@ -72,55 +72,43 @@ got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
       printf("RARP\n");
       break;
     }
-  /*
-  printf("packet %d dst=",cpt++);
-  for (int i=0;i<ETH_ALEN;i++){
-    printf("%x:",ethernet->ether_dhost[i]);
-  }
-  printf("\tsrc=");
-  for (int i=0;i<ETH_ALEN;i++){
-    printf("%x:",ethernet->ether_shost[i]);
-  }
-  printf("\t type=%x\n", ntohs(ethernet->ether_type));
-  //*/
 }
 
 int
 main(int argc, char**argv, char** env)
 {
   char *dev, errbuf[PCAP_ERRBUF_SIZE];
-  
-  if (!(dev = pcap_lookupdev(errbuf))){
-    printErr(errbuf);
-    return 2;
-  }
-  
-  //dev = "enp2s0";
-  printf("%s\n",dev);
-  
   bpf_u_int32 netaddr, netmask;
-  /*
-  if (pcap_lookupnet(dev, netaddr, netmask, errbuf)==-1){
-    printErr(errbuf);
-    return 3;
-  }
-  */
+  pcap_if_t *alldev;
   pcap_t *pcap;
+
   //addresse sous reseau
   //pcap_lookupnet(dev, netaddr, netmask);
+  if (pcap_findalldevs(&alldev, errbuf)==-1){
+    printf("%s",errbuf);
+    return 1;
+  }
+  if (alldev==NULL){
+    printf("no device found\n");
+    return 10;
+  }
+  else{
+    dev = alldev->name;
+  }
+  
   if (pcap_lookupnet(dev, &netaddr, &netmask, errbuf)==-1){
     printf("%s\n",errbuf);
     netaddr=0;
     netmask=0;
   }
-  
+  //printf("%s %d %d\n",dev, netaddr, netmask);
   if (!(pcap=pcap_open_live(dev, LENGTH_PKT_MAX, PROMISC, TO_MS, errbuf))){
     printErr(errbuf);
     return 2;
   }
 
   struct bpf_program filter;
-  char* filter_exp = "arp"; 
+  char* filter_exp = "tcp"; 
   if (pcap_compile(pcap, &filter, filter_exp, 0, netmask)==-1){
     printf("%s\n",errbuf);
     return 3;
