@@ -1,5 +1,5 @@
-make mydump --dry-run --always-make --keep-going --print-directory
+make mydump --dry-run --keep-going --print-directory
 make: Entering directory '/home/florent/analyseur-reseau'
-gcc main.c -lpcap -o mydump -g
+make: 'mydump' is up to date.
 make: Leaving directory '/home/florent/analyseur-reseau'
  

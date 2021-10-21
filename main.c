@@ -4,7 +4,7 @@
 #include <string.h>
 #include <net/ethernet.h>
 #include <netinet/ip.h>
-
+#include "affiche.h"
 //print err
 #define printErr(err) printf("erreur : %s\n",err);
 //pour open_live
@@ -15,66 +15,11 @@
 #define NP_PKT_CAPTURE 5
 //mdp info tplri
 
-//for IP
-#define UDP 0x11
-#define TCP 0x06
 
-//ARP
-struct arp {
-  unsigned int type:16;
-  unsigned int protocol:16;
-  unsigned int L_phy:8;
-  unsigned int L_pro:8;
-  unsigned int operation:16;
-};
 
-#include "affiche.c"
-int cpt=0;
+#include "affiche.h"
+#include "capture.h"
 
-void
-got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
-{
-  int v=2;
-  printf("\nPacket : %d\n",cpt++);
-  uint size=0;
-  const struct ether_header *ethernet;
-  ethernet = (struct ether_header*)(packet);
-  size+=sizeof(struct ether_header);
-  affiche_ETH(ethernet, v);
-  //traite ip
-  switch (ntohs(ethernet->ether_type))
-    {
-      
-    case ETHERTYPE_IP : ;
-      const struct iphdr *ip;
-      ip = (struct iphdr*)(packet +size);
-      size+=sizeof(struct iphdr);
-      
-      affiche_IP(ip,v);
-      //check version + option ?
-      //traite UDP
-      if (ip->protocol==UDP){
-	printf("UDP\n");
-      }
-      //traite TCP
-      if (ip->protocol==TCP){
-	printf("TCP\n");
-      }
-      break;
-      
-    case ETHERTYPE_ARP: ;
-      const struct arp *arp;
-      arp= (struct arp*)(packet+size);
-      size+=sizeof(struct arp);	    
-      printf("ARP\n");
-      affiche_ARPR(arp);
-      break;
-
-    case ETHERTYPE_REVARP:
-      printf("RARP\n");
-      break;
-    }
-}
 
 int
 main(int argc, char**argv, char** env)
@@ -162,9 +107,9 @@ main(int argc, char**argv, char** env)
 
   //verifie verbose 
   verbose = (verbose==-1?1:verbose);
-  printf("commence capture sur %s  avec verbose de %d et filtrer %s",dev, verbose, filter_exp);
-  int res=pcap_loop(pcap, NP_PKT_CAPTURE, got_packet, NULL);
-  printf("nombre packet capturer : %d\n",cpt);
+  printf("commence capture sur %s  avec verbose de %d et filtrer %s\n",dev, verbose, filter_exp);
+  pcap_loop(pcap, NP_PKT_CAPTURE, got_packet, NULL);
+  //printf("nombre packet capturer : %d\n",cpt);
   
   return 0;
 }

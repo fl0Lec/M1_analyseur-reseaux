@@ -1,5 +1,34 @@
+#include "affiche.h"
+#include <stdio.h>
+#include <stdlib.h>
 #define PRINTLINE() printf("______________________________________\n");
-void afficheIPaddr(uint32_t addr)
+
+#define ABSA(a) (a<0?-a+2:a)
+void 
+afficheAddr(struct arp_adr* a, int size)
+{
+  switch (size)
+  {
+  case 4:
+    for (int i=0;i<4;i++)
+      printf("%d.",ABSA(a->add[i]));
+    
+    break;
+  case 6 :
+    for (int i=0;i<6;i++)
+      printf("%x:",ABSA(a->add[i])); //use ABSA car addresse sont sur unsigned
+    
+  break;
+  default: 
+    for (int i=0;i<size;i++)
+      printf("%x|",ABSA(a->add[i]));
+    break;
+  }
+  printf("\n");
+}
+
+void 
+afficheIPaddr(uint32_t addr)
 {
   printf("%d.%d.%d.%d", addr & 255, addr>>8 & 255,
 	 addr>>16 & 255,
@@ -52,6 +81,9 @@ affiche_IP(const struct iphdr *ip, int v){
   }
 }
 
-void affiche_ARPR(const struct arp *arp){
-  return;
+void 
+affiche_ARPR(const struct arp *arp){
+  printf("ARP : type : %x | protocol : %x | operation : %s\n",arp->type, 
+  arp->protocol,
+  (arp->operation==ARP_REQUEST?"request":arp->operation==ARP_REPLY?"reply":"autre"));
 }

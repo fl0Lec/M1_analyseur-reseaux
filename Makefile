@@ -1,4 +1,16 @@
-all : mydump
+CC=gcc
+CFLAGS=-Wall -g
+LDFLAGS=-lpcap
+EXEC=mydump
+all : $(EXEC)
 
-mydump : main.c affiche.c
-	gcc main.c -lpcap -o mydump -g
+mydump : main.o affiche.o capture.o
+	$(CC) $^  -o $@ $(LDFLAGS)
+	sudo setcap cap_net_raw,cap_net_admin=eip $(EXEC)
+
+
+%.o : %.c 
+	$(CC) $(CFLAGS) -o $@ -c $<	
+
+clean : 
+	rm *.o $(EXEC)
