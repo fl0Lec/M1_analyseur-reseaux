@@ -12,7 +12,7 @@
 #define PROMISC 0
 #define TO_MS 100
 //pour loop
-#define NP_PKT_CAPTURE 5
+#define NP_PKT_CAPTURE 8
 //mdp info tplri
 
 
@@ -28,7 +28,7 @@ main(int argc, char**argv, char** env)
   bpf_u_int32 netaddr, netmask;
   pcap_if_t *alldev;
   pcap_t *pcap;
-  int verbose=-1;
+  u_char verbose=-1;
   if ((argc-1)%2){
     printf("erreur attend nom et paramètre -h");
     return 2;
@@ -45,7 +45,7 @@ main(int argc, char**argv, char** env)
       filter_exp = argv[i+1];
     }
     else if (strcmp(argv[i], "-v")==0){
-      if (verbose!=-1){
+      if (verbose!=(u_char)-1){
         printf("erreur vous avez deja defini verbose\n");
         return 6;
       }
@@ -80,7 +80,7 @@ main(int argc, char**argv, char** env)
   
   //ouvre pcap en live ou dans file
   if (ofile_path){
-    if (!(pcap_open_offline(ofile_path, errbuf))){
+    if (!(pcap=pcap_open_offline(ofile_path, errbuf))){
       printErr(errbuf);
       return 3;
     }
@@ -106,9 +106,9 @@ main(int argc, char**argv, char** env)
   }
 
   //verifie verbose 
-  verbose = (verbose==-1?1:verbose);
+  verbose = (verbose==255?1:verbose);
   printf("commence capture sur %s  avec verbose de %d et filtrer %s\n",dev, verbose, filter_exp);
-  pcap_loop(pcap, NP_PKT_CAPTURE, got_packet, NULL);
+  pcap_loop(pcap, NP_PKT_CAPTURE, got_packet, &verbose);
   //printf("nombre packet capturer : %d\n",cpt);
   
   return 0;

@@ -54,16 +54,24 @@ affiche_ETH(const struct ether_header *ethernet, int v)
 }
 
 void
-affiche_IP(const struct iphdr *ip, int v){
+affiche_IP(const struct iphdr *ip, int v)
+
+{
   //affiche IP src IP dst et protocol utiliser
-  if (v==2){
+  switch (v)
+  {
+  case 1:
+    printf("IP | ");
+    break;
+  
+  case 2 :
     printf("IP:src=");
     afficheIPaddr(ip->saddr);
     printf(" >> dst=");
     afficheIPaddr(ip->daddr);
     printf("\n");
-  }
-  if (v==3){
+    break;
+  case 3 :
     PRINTLINE();
     printf("\t\tIP\n");
     printf("|version=%d|taille header=%d|TOS=%d|taille total=%d|\n",
@@ -78,12 +86,79 @@ affiche_IP(const struct iphdr *ip, int v){
     printf("|\n|destination addresse = ");
     afficheIPaddr(ip->daddr);
     printf("|\n");  
+    break;
+  }
+   
+}
+void 
+affiche_ARP(const struct arphdr *arp, int v)
+{
+  switch (v)
+  {
+  case 1 :
+    printf("%s operation %s | ",
+  (arp->ar_op>>8<ARPOP_RREQUEST?"ARP":"RARP"),
+  ((arp->ar_op>>8==ARPOP_REQUEST || arp->ar_op>>8==ARPOP_RREQUEST)?"request":(arp->ar_op>>8==ARPOP_REPLY || arp->ar_op>>8==ARPOP_RREPLY)?"reply":"autre")
+    );
+    break;
+  case 2 :
+  case 3 :
+    printf("%s : type : %s | protocol : %s | operation : %s %x\n",
+    (arp->ar_op>>8<ARPOP_RREQUEST?"ARP":"RARP"),
+    (arp->ar_hln==ETH_ALEN?"ethernet":"autre"), 
+    (arp->ar_pln==4?"IPv4":"autres"),
+    ((arp->ar_op>>8==ARPOP_REQUEST || arp->ar_op>>8==ARPOP_RREQUEST)?"request":(arp->ar_op>>8==ARPOP_REPLY || arp->ar_op>>8==ARPOP_RREPLY)?"reply":"autre"),
+    arp->ar_op>>8);
+    break;
   }
 }
 
-void 
-affiche_ARPR(const struct arp *arp){
-  printf("ARP : type : %x | protocol : %x | operation : %s\n",arp->type, 
-  arp->protocol,
-  (arp->operation==ARP_REQUEST?"request":arp->operation==ARP_REPLY?"reply":"autre"));
+void affiche_UDP(const struct udphdr * udp, int v){
+  switch (v)
+  {
+  case 1 : 
+    printf("UDP | ");
+    break;
+  case 2 :
+    printf("UDP : port source : %d | port destination : %d\n",
+    udp->source, udp->dest);
+    break;
+  case 3 :
+    printf("UDP\nport source : %d | port destination : %d\nlength udp %d | checksum : %d\n",
+    udp->source, udp->dest, udp->len, udp->check);
+    break;
+  }
+}
+
+void affiche_TCP(const struct tcphdr* tcp, int v){
+  switch (v)
+  {
+  case 1:
+    printf("TCP | ");
+    break;
+  case 2 :
+    printf("TCP : source port %d | destination port %d", 
+      tcp->source, tcp->dest);
+    break;
+  case 3 :
+    printf("TCP : source port %d | destination port %d \n flags : ",
+      tcp->source, tcp->dest);
+    uint8_t tcp_flag=tcp->th_flags;
+    if (tcp_flag & TH_FIN)
+      printf("FIN ");
+    if (tcp_flag & TH_SYN)
+      printf("SYN");
+    if (tcp_flag & TH_RST)
+      printf("RST "); 
+    if (tcp_flag & TH_PUSH)
+      printf("PUSH ");
+    if (tcp_flag & TH_ACK)
+      printf("ACK ");
+    if (tcp_flag & TH_URG)
+      printf("URGENT ");
+    printf("|\n");   
+
+    break;
+    
+  }
 }

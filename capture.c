@@ -1,10 +1,18 @@
-#include "capture.h"
+#include <net/ethernet.h>
+#include <netinet/ip.h>
+#include<netinet/udp.h>
+#include<netinet/tcp.h>
 #include <stdlib.h>
+#include <stdint.h>
+
+#include "capture.h"
+#include "affiche.h"
+
 int cpt = 0;
 void
 got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 {
-  int v=2;
+  int v=(int)*args;
   printf("\nPacket : %d\n",cpt++);
   uint size=0;
   const struct ether_header *ethernet;
@@ -24,34 +32,41 @@ got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
       //check version + option ?
       //traite UDP
       if (ip->protocol==UDP){
-	printf("UDP\n");
+	      const struct udphdr *udp;
+        udp = (struct udphdr*)(packet+size);
+        size+=sizeof(struct udphdr);
+        affiche_UDP(udp, v);
+
       }
       //traite TCP
       if (ip->protocol==TCP){
-	printf("TCP\n");
+        const struct tcphdr *tcp;
+        tcp = (struct tcphdr*) (packet+size);
+        size+=sizeof(struct tcphdr);
+	      affiche_TCP(tcp, v);
       }
       break;
       
     case ETHERTYPE_ARP: ;
-      const struct arp *arp;
-      arp= (struct arp*)(packet+size);
-      size+=sizeof(struct arp);	    
-
-      affiche_ARPR(arp);
-      struct arp_adr phy, proto;
-      
-      for (int i=0;i<2;i++){
-        phy.add=(char*)(packet+size);
-        size+=arp->L_phy;
-        proto.add=(char*)(packet+size);
-        size+=arp->L_pro;        
-        afficheAddr(&phy, arp->L_phy);
-        afficheAddr(&proto, arp->L_pro);
+      const struct arphdr *arp;
+      arp= (struct arphdr*)(packet+size);
+      size+=sizeof(struct arphdr);	   
+      //si est ARP 
+      affiche_ARP(arp, v);
+      if (v==3){
+        struct arp_adr phy, proto;
+          
+        for (int i=0;i<2;i++){
+          phy.add=(char*)(packet+size);
+          size+=arp->ar_hln;
+          proto.add=(char*)(packet+size);
+          size+=arp->ar_pln; 
+          printf("%s hardware addresse : ",(i==0?"sender":"receiver"));    
+          afficheAddr(&phy, arp->ar_hln);
+          printf("%s protocol addresse : ",(i==0?"sender":"receiver")); 
+          afficheAddr(&proto, arp->ar_pln);
       }
-      
-      //10.3.-115.1.
-
-      
+      }
       break;
 
     case ETHERTYPE_REVARP:

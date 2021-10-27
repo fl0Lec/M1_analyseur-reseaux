@@ -6,5 +6,6 @@
             "binaryPath": "/home/florent/analyseur-reseau/mydump",
             "binaryArgs": []
         }
-    ]
+    ],
+    "C_Cpp.errorSquiggles": "Disabled"
 }
