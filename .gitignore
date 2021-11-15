@@ -1,3 +1,5 @@
 *~
 mydump
+.vscode*
 *\.o
+*pcap
