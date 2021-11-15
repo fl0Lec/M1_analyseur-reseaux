@@ -1,6 +1,9 @@
 #include "affiche.h"
+#include "const.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
 #define PRINTLINE() printf("______________________________________\n");
 
 #define ABSA(a) (a<0?-a+2:a)
@@ -120,11 +123,12 @@ void affiche_UDP(const struct udphdr * udp, int v){
     printf("UDP | ");
     break;
   case 2 :
-    printf("UDP : port source : %d | port destination : %d\n",
+    printf("UDP : port source : %x | port destination : %x\n",
     udp->source, udp->dest);
     break;
   case 3 :
-    printf("UDP\nport source : %d | port destination : %d\nlength udp %d | checksum : %d\n",
+    PRINTLINE();
+    printf("UDP\nport source : %x | port destination : %u\nlength udp %d | checksum : %d\n",
     udp->source, udp->dest, udp->len, udp->check);
     break;
   }
@@ -133,11 +137,11 @@ void affiche_UDP(const struct udphdr * udp, int v){
 void affiche_TCP(const struct tcphdr* tcp, int v){
   switch (v)
   {
-  case 1:
+  case 1 :
     printf("TCP | ");
     break;
   case 2 :
-    printf("TCP : source port %d | destination port %d", 
+    printf("TCP : source port %d | destination port %d\n", 
       tcp->source, tcp->dest);
     break;
   case 3 :
@@ -159,6 +163,51 @@ void affiche_TCP(const struct tcphdr* tcp, int v){
     printf("|\n");   
 
     break;
+  }
+}
+
+void affiche_Bootp(const struct bootp* bootp, int v, const u_char* vend){
+  switch (v)
+  {
+  case 1 :
+    printf("BOOTP");
+    break;
+  case 2 :
+    printf("BOOTP : info\n");
+  break;
+  case 3 :
+    PRINTLINE();
+    printf("BOOTP \n");
+    
+    if (vend[0]==0x63 && vend[1]==0x82 && vend[2]==0x53 && vend[3]==0x63)
+      printf("MAGIC COOKIE\n");
+    else {
+      printf("MAGIC COOKIE INVALID\n");
+      return;
+    }
+    int i=4, len;
+    while (vend[i]!=0xff && i<64){
+    switch (vend[i])
+    {
+    case 53:
+      len=vend[++i];
+      printf("MSG TYPE : %x \n", vend[++i]);
+      i+=len;
+      break;
+    
+    default:
+      printf("TYPE : %x ",vend[i++]);
+      len=vend[i++];
+      printf("LEN : %d MSG :",len);
+      for (int k=0;k<len;k++){
+        printf("%x ",vend[i+k]);
+      }
+      printf("\n");
+      i+=len;
+      break;
+    }
+    }
+    //printf("%x",vend[4]);
     
   }
 }

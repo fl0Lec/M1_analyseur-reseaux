@@ -6,6 +6,8 @@
 #include <net/if_arp.h>
 #include <netinet/udp.h>
 #include <netinet/tcp.h>
+#include "bootp.h"
+
 //for IP
 #define UDP 0x11
 #define TCP 0x06
@@ -30,6 +32,7 @@ void affiche_ARP(const struct arphdr *, int);
 void affiche_UDP(const struct udphdr *, int);
 void affiche_TCP(const struct tcphdr *, int);
 
+void affiche_Bootp(const struct bootp*, int, const u_char*);
 
 
 #endif

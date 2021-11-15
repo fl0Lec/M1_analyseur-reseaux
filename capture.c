@@ -7,6 +7,7 @@
 
 #include "capture.h"
 #include "affiche.h"
+#include "const.h"
 
 int cpt = 0;
 void
@@ -26,8 +27,8 @@ got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
     case ETHERTYPE_IP : ;
       const struct iphdr *ip;
       ip = (struct iphdr*)(packet +size);
-      size+=sizeof(struct iphdr);
-      
+      size+=ip->ihl*4;//;sizeof(struct iphdr);
+      //printf("size ip %ld\n", sizeof(struct iphdr));
       affiche_IP(ip,v);
       //check version + option ?
       //traite UDP
@@ -36,6 +37,22 @@ got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
         udp = (struct udphdr*)(packet+size);
         size+=sizeof(struct udphdr);
         affiche_UDP(udp, v);
+        switch (udp->uh_dport)
+        {
+        case BOOTP_PORT_CLIENT :
+        case BOOTP_PORT_SERVER : 
+          ;
+          const struct bootp *bootp;
+          bootp = (struct bootp*)(packet+size);
+          size+=sizeof(struct bootp);
+          
+          affiche_Bootp(bootp, v, packet+size);
+
+          break;
+        
+        default:
+          break;
+        }
 
       }
       //traite TCP

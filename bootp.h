@@ -31,7 +31,7 @@ struct bootp
     char chaddr[16];
     char sname[64];
     char file[128];
-    uchar vend[64];
+    //u_char vend[64];
 };
 
 #endif

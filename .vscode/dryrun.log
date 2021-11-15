@@ -1,9 +1,0 @@
-make mydump --dry-run --always-make --keep-going --print-directory
-make: Entering directory '/home/florent/analyseur-reseau'
-gcc -Wall -g -o main.o -c main.c	
-gcc -Wall -g -o affiche.o -c affiche.c	
-gcc -Wall -g -o capture.o -c capture.c	
-gcc main.o affiche.o capture.o  -o mydump -lpcap
-sudo setcap cap_net_raw,cap_net_admin=eip mydump
-make: Leaving directory '/home/florent/analyseur-reseau'
- 
