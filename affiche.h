@@ -24,15 +24,15 @@ void afficheAddr(struct arp_adr*, int);
 
 void afficheIPaddr(uint32_t);
 
-void affiche_ETH(const struct ether_header *, int );
+void affiche_ETH(const struct ether_header *, int , char *tab);
 
-void affiche_IP(const struct iphdr *, int );
-void affiche_ARP(const struct arphdr *, int);
+void affiche_IP(const struct iphdr *, int , char *tab);
+void affiche_ARP(const struct arphdr *, int, char *tab);
 
-void affiche_UDP(const struct udphdr *, int);
-void affiche_TCP(const struct tcphdr *, int);
+void affiche_UDP(const struct udphdr *, int, char *tab);
+void affiche_TCP(const struct tcphdr *, int, char *tab);
 
-void affiche_Bootp(const struct bootp*, int, const u_char*);
+void affiche_Bootp(const struct bootp*, int, const u_char*, char *tab);
 
 
 #endif
