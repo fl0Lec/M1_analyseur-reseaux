@@ -60,10 +60,8 @@ case 0 :
 	i++;
 	len=vend[i++];
 	printf("Pad : ");
-	for (int k=0;k<len;k++){
-		printf("%x ",vend[i+k]);
-	}
-	break;
+	i--;
+	len=0;	break;
 
 case 1 :
 	i++;
@@ -515,10 +513,38 @@ case 53 :
 	i++;
 	len=vend[i++];
 	printf("DHCP Msg Type : ");
-	for (int k=0;k<len;k++){
-		printf("%x ",vend[i+k]);
-	}
-	break;
+switch (vend[i])
+        {
+        case  1:
+          printf("discovery");
+          break;
+        case 2:
+          printf("offer");
+          break;
+        case 3:
+          printf("request");
+          break;
+        case 4:
+          printf("decline");
+          break;
+        case 5: 
+          printf("ack");
+          break;
+        case 6:
+          printf("nack");
+          break;
+        case 7:
+          printf("realse");
+          break;
+        case 8:
+          printf("informe");
+          break;
+        default:
+          printf("non reconnu %x", vend[i++]);
+          break;
+        }
+                    
+                    	break;
 
 case 54 :
 	i++;

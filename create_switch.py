@@ -18,7 +18,41 @@ for index, row in df.iterrows():
         f.write("case %s :\n\ti++;\n\tlen=vend[i++];\n" % row["Tag"])
         f.write("\tprintf(\"%s : \");\n" % row["Name"])
         #verifie la taille
-        if int(row["Tag"])in addrIP :
+        if (int(row["Tag"]))==53: 
+            f.write("""switch (vend[i])
+        {
+        case  1:
+          printf("discovery");
+          break;
+        case 2:
+          printf("offer");
+          break;
+        case 3:
+          printf("request");
+          break;
+        case 4:
+          printf("decline");
+          break;
+        case 5: 
+          printf("ack");
+          break;
+        case 6:
+          printf("nack");
+          break;
+        case 7:
+          printf("realse");
+          break;
+        case 8:
+          printf("informe");
+          break;
+        default:
+          printf("non reconnu %x", vend[i++]);
+          break;
+        }           
+                    """)
+        elif int(row["Tag"])==0:
+            f.write("\ti--;\n\tlen=0;")
+        elif int(row["Tag"])in addrIP :
             f.write("\tafficheIPBootp(vend+i, len);")
         elif int(row["Tag"])==61:
             f.write("\tafficheAddBootp(vend+i, len);")
