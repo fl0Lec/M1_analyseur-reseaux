@@ -12,7 +12,11 @@
 #define PROMISC 0
 #define TO_MS 100
 //pour loop
+<<<<<<< HEAD
 #define NP_PKT_CAPTURE 10
+=======
+#define NP_PKT_CAPTURE 8
+>>>>>>> ba0abb4d273d68dec3db00d79ff489d1e623c70a
 //mdp info tplri
 
 

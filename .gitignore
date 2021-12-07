@@ -1,5 +1,7 @@
 *~
 mydump
-.vscode/*
+.vscode*
 *\.o
-*pcap
+*cap
+*csv
+sample.c
