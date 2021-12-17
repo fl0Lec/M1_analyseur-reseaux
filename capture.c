@@ -9,6 +9,7 @@
 #include "capture.h"
 #include "affiche.h"
 #include "const.h"
+#include "dns.h"
 
 int cpt = 0;
 void
@@ -52,10 +53,30 @@ got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
           size+=sizeof(struct bootp);
           
           affiche_Bootp(bootp, v, packet+size, tab);
-
           break;
+        case DNS_port :
+          ;
+          const struct dns_header *dns;
+          dns = (struct dns_header*) (packet+size);
+          size+=sizeof(struct dns_header);
+          affiche_DNS(dns, packet+size, v, tab);
+          //printf("DNS\n");
         
         default:
+          switch (udp->uh_sport)
+          {
+          case DNS_port :
+            ;
+          const struct dns_header *dns;
+          dns = (struct dns_header*) (packet+size);
+          size+=sizeof(struct dns_header);
+          affiche_DNS(dns, packet+size, v, tab);
+          //printf("DNS\n");
+            break;
+          
+          default:
+            break;
+          }
           break;
         }
 
@@ -79,14 +100,14 @@ got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
         struct arp_adr phy, proto;
           
         for (int i=0;i<2;i++){
-          phy.add=(char*)(packet+size);
+          phy.add=(uchar*)(packet+size);
           size+=arp->ar_hln;
-          proto.add=(char*)(packet+size);
+          proto.add=(uchar*)(packet+size);
           size+=arp->ar_pln; 
           printf("%s hardware addresse : ",(i==0?"sender":"receiver"));    
-          afficheAddr(&phy, arp->ar_hln);
+          afficheAddr(phy.add, arp->ar_hln);
           printf("%s protocol addresse : ",(i==0?"sender":"receiver")); 
-          afficheAddr(&proto, arp->ar_pln);
+          afficheAddr(proto.add, arp->ar_pln);
       }
       }
       break;

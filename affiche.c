@@ -8,23 +8,23 @@
 
 #define ABSA(a) (a<0?-a+2:a)
 void 
-afficheAddr(struct arp_adr* a, int size)
+afficheAddr(const uchar* a, int size) //pas necessairement arp_adr mais une struct qui contient char* avec les adresses
 {
   switch (size)
   {
   case 4:
     for (int i=0;i<4;i++)
-      printf("%d.",ABSA(a->add[i]));
+      printf("%d.",ABSA(a[i]));
     
     break;
   case 6 :
     for (int i=0;i<6;i++)
-      printf("%x:",ABSA(a->add[i])); //use ABSA car addresse sont sur unsigned
+      printf("%x:",ABSA(a[i])); //use ABSA car addresse sont sur unsigned
     
   break;
   default: 
     for (int i=0;i<size;i++)
-      printf("%x|",ABSA(a->add[i]));
+      printf("%x|",ABSA(a[i]));
     break;
   }
   printf("\n");
@@ -94,7 +94,6 @@ affiche_IP(const struct iphdr *ip, int v, char *tab)
     printf("|\n");  
     break;
   }
-   
 }
 void 
 affiche_ARP(const struct arphdr *arp, int v, char *tab)
@@ -169,211 +168,89 @@ void affiche_TCP(const struct tcphdr* tcp, int v, char *tab){
     break;
   }
 }
-/*------------------------------------------------------*/
-/*
-void afficheAddBootp(const u_char* vend, int len){
-  int i=1;//type=vend[0];
-  for (;i<len;i++){
-    printf("%d.",vend[i]);
-  }
-}
 
-void afficheIPBootp(const u_char* vend, int len){
-  if (len!=4)
-    printf("longueur address non valde : %d attendu 4",len);
-  else {
-    for (int i=0;i<len;i++){
-      printf("%d.",vend[i]);
-    }
-  }
-}
-void affiche_Bootp(const struct bootp* bootp, int v, const u_char* vend, char *tab){
+void affiche_DNS(const struct dns_header* header, const u_char *packet, int v, char* tab)
+{
+  int k=0;
   switch (v)
   {
-  case 1 :
-    printf("BOOTP");
+  case 1:
+    printf("| DNS : %s ", (header->flags&0x80?"reponse": "demande"));
     break;
-  case 2 :
-    printf("BOOTP : info\n");
-  break;
-  case 3 :
-    //PRINTLINE();
-    printf("%s\tBOOTP \n", tab);
-    
-    if (vend[0]==0x63 && vend[1]==0x82 && vend[2]==0x53 && vend[3]==0x63)
-      printf("%s|MAGIC COOKIE\n", tab);
-    else {
-      printf("%s|MAGIC COOKIE INVALID\n", tab);
-      return;
+  case 2: 
+    printf("DNS : %s : demande sur ", (header->flags&0x80?"reponse": "demande"));
+
+    for (int i=0; i<(header->QDcount>>8)+((header->QDcount&0xff)<<8); i++){
+      //taille prochain champs
+      while (packet[k]!=0){
+        //parcours champs
+        for (int j=1; j<=packet[k];j++)
+          printf("%c", packet[k+j]);
+
+        k+=packet[k]+1;
+        printf(".");
+      }
+      printf(" / ");
+      //pour extra champs 
+      k+=5;
     }
-    int i=4, len;
-    while (vend[i]!=0xff && i<64){
-      printf("%s|",tab);
-      switch (vend[i])
-      {
-      case 1:
-        printf("Subnet Mask :");
-        i++;
-        len=vend[i++];
-        afficheIPBootp(vend+i, len);
-        break;
-      //-------------------------------------------------
-      //Requested IP Address
-      case 50:
-        printf("Request IP Address : ");
-        i++;
-        len=vend[i++];
-        afficheIPBootp(vend+i, len);
-      break;
-      //-------------------------------------------------
-      case 51:
-        printf("IP Address Lease Time : ");
-        i++;
-        len=vend[i++];
-         if (len==4){
-           //const uint32_t *time; time=vend+i;
-           //il ya des problemes ici
-           uint32_t time=0;
-           for (int k=0;k<len;k++){
-             //printf("\n %x %x %x ",vend[i+k], expo, time);
-             time=(time<<8)+vend[i+k];
-           }
-           if (time!=0xffffff)
-             printf("%d",time);
-           else 
-            printf("infini");
-         } else {
-          printf("longeur invalide %d",len);
+    printf("\n");
+    break;
+  default://3
+    printf("%s\tDNS\n%sid : %x| type : %s | number of question : %x | number of answer : %x\n", tab, tab,
+    (header->id>>8)+((header->id&0xff)<<8), 
+    (header->flags&0x80?"reponse": "demande"), 
+    (header->QDcount>>8)+((header->QDcount&0xff)<<8), 
+    (header->ANcount>>8)+((header->ANcount&0xff)<<8));
+    char nom[100];
+    //pour chaque question
+    for (int i=0; i<(header->QDcount>>8)+((header->QDcount&0xff)<<8); i++){
+      printf("%sDemande %d : ",tab, i+1);
+      //taille prochain champs
+      while (packet[k]!=0){
+        //parcours champs
+        for (int j=1; j<=packet[k];j++){
+          printf("%c", packet[k+j]);
+          if (i==1) nom[k+j]=packet[k+j];
         }
-        break;
-      //-------------------------------------------------
-      case 52 :
-      printf("Option Overload : ");
-      i++;
-      len=vend[i++];
-      if (len==1){
-        switch (vend[i])
-        {
-        case 1:
-          printf("fichier utiliser");
-          break;
-        case 2:
-          printf("sname utiliser");
-          break;
-        break;
-        case 3:
-          printf("fichier et sname utiliser");
-          break;
-        default:
-          printf("non reconnu");
-          break;
-        }
+        k+=packet[k]+1;
+        printf(".");
+        if (i==1) nom[k]='.';
       }
-      else 
-        printf("longueur non attentdu");
-      break;
-      //-------------------------------------------------
-      
-      //DCHP Message Type
-      case 53:
-        printf("DHCP Message Type : ");
-        i++;
-        len=vend[i++];
-        switch (vend[i])
-        {
-        case  1:
-          printf("discovery");
-          break;
-        case 2:
-          printf("offer");
-          break;
-        case 3:
-          printf("request");
-          break;
-        case 4:
-          printf("decline");
-          break;
-        case 5: 
-          printf("ack");
-          break;
-        case 6:
-          printf("nack");
-          break;
-        case 7:
-          printf("realse");
-          break;
-        case 8:
-          printf("informe");
-          break;
-        default:
-          printf("non reconnu %x", vend[i++]);
-          break;
-        }
-        break;
-      //-------------------------------------------------
-      case 54 :
-        i++;
-        len=vend[i++];
-        printf("Server Identifier :");
-        if (len==4){
-          for (int k=0;k<4;k++){
-            printf("%d.",vend[i+k]);
-          }
-        } else {
-          printf("longueur non valide : %d",len);
-        }
-        break;
-      //-------------------------------------------------
-      case 55 :
-        i++;
-        len=vend[i++];
-        printf("Parameter Request List :");
-        for (int k=0;k<len;k++){
-          switch (vend[i+k])
-          {
-          case 1:
-            printf("subnet mask, ");
-            break;
-          case 3:
-            printf("router ");
-            break;
-          case 6:
-            printf("DNS ");
-            break;
-          case 15:
-            printf("domain name ");
-            break;
-          case 28 :
-            printf("broadcast address ");
-            break;
-          default:
-            printf("%d ",vend[i+k]);
-            break;
-          }
-        }
-        break;
-      //-------------------------------------------------
-      case 61:
-        i++;
-        len=vend[i++];
-        printf("Client Id :");
-        afficheAddBootp(vend+i, len);
-        break;
-      //-------------------------------------------------
-      default:
-        printf("TYPE : %d ", vend[i++]);
-        len=vend[i++];
-        printf("LEN : %d MSG :",len);
-        for (int k=0;k<len;k++){
-          printf("%x ",vend[i+k]);
-        }
-        break;
-      }
+      nom[k]='\0';
       printf("\n");
-      i+=len;
+      //pour extra champs 
+      k+=5;
     }
-    //printf("%x",vend[4]);
     
+    for (int i=0; i<(header->ANcount>>8)+((header->ANcount&0xff)<<8); i++){
+      printf("%sReponse %d : ", tab, i+1);
+      struct dns_response r;
+      //construction namuel par pointeur ne fonctionne pas pour raison inconnu
+      r.name = packet[k]*16+packet[k+1];
+      r.type = packet[k+2]*16+packet[k+3];
+      r.class = packet[k+4]*16+packet[k+5];
+      r.TTL = (packet[k+6]<<24)+(packet[k+7]<<16)+(packet[k+8]<<8)+packet[k+9]; 
+      r.len = packet[k+10]*16+packet[k+11];
+
+      printf("nom : %s | type : %s | class : %s | ttl : %d | ",
+        nom+(r.name&0xff)-12, 
+        (r.type==1?"host address":r.type==2?"NS":r.type==5?"CNAME":"inconnu"),
+        (r.class==1?"IN":"inconnu"), 
+        r.TTL);
+      switch (r.len)
+      {
+      case 2:
+        printf("reference to : %s\n",nom+packet[k+13]-12);
+        break;
+      case 4:
+        printf("addresse :");
+        afficheAddr(packet+k+12, 4);
+      default:
+        break;
+      }
+      k+=12+r.len;
+    }
+      break;
   }
-}
-//*/
+} 

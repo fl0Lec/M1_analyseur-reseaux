@@ -7,6 +7,7 @@
 #include <netinet/udp.h>
 #include <netinet/tcp.h>
 #include "bootp.h"
+#include "dns.h"
 
 //for IP
 #define UDP 0x11
@@ -16,11 +17,11 @@
 
 struct arp_adr
 {
-    char* add;
+    uchar* add;
 };
 
 
-void afficheAddr(struct arp_adr*, int);
+void afficheAddr(const uchar*, int);
 
 void afficheIPaddr(uint32_t);
 
@@ -33,6 +34,8 @@ void affiche_UDP(const struct udphdr *, int, char *tab);
 void affiche_TCP(const struct tcphdr *, int, char *tab);
 
 void affiche_Bootp(const struct bootp*, int, const u_char*, char *tab);
+
+void affiche_DNS(const struct dns_header* header, const u_char *packet,int v, char* tab);
 
 
 #endif
