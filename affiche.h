@@ -13,7 +13,8 @@
 #define UDP 0x11
 #define TCP 0x06
 
-
+#define PRINTLINE() printf("__________________________________________\n");
+#define REVUINT(a) (a>>8)+((a&0xff)<<8)
 
 struct arp_adr
 {
@@ -34,8 +35,9 @@ void affiche_UDP(const struct udphdr *, int, char *tab);
 void affiche_TCP(const struct tcphdr *, int, char *tab);
 
 void affiche_Bootp(const struct bootp*, int, const u_char*, char *tab);
-
 void affiche_DNS(const struct dns_header* header, const u_char *packet,int v, char* tab);
+
+void affiche_SMTP(const uchar* data, size_t size,int ser, int v, char* tab);
 
 
 #endif

@@ -4,7 +4,7 @@ LDFLAGS=-lpcap
 EXEC=mydump
 all : $(EXEC)
 
-mydump : main.o affiche.o capture.o
+mydump : main.o afficheUDP.o afficheTCP.o capture.o
 	$(CC) $^  -o $@ $(LDFLAGS)
 	sudo setcap cap_net_raw,cap_net_admin=eip $(EXEC)
 
