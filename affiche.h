@@ -8,13 +8,8 @@
 #include <netinet/tcp.h>
 #include "bootp.h"
 #include "dns.h"
+#include "const.h"
 
-//for IP
-#define UDP 0x11
-#define TCP 0x06
-
-#define PRINTLINE() printf("__________________________________________\n");
-#define REVUINT(a) (a>>8)+((a&0xff)<<8)
 
 struct arp_adr
 {

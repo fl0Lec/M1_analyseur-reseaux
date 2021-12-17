@@ -3,7 +3,8 @@
 
 #define ASCII(c) ((c>=' ' && c<=126)?c:'.')
 
-void affiche_TCP(const struct tcphdr* tcp, int v, char *tab){
+void 
+affiche_TCP(const struct tcphdr* tcp, int v, char *tab){
   switch (v)
   {
   case 1 :
@@ -35,7 +36,8 @@ void affiche_TCP(const struct tcphdr* tcp, int v, char *tab){
   }
 }
 
-void affiche_SMTP(const uchar* data, size_t size, int serv, int v, char* tab)
+void 
+affiche_SMTP(const uchar* data, size_t size, int serv, int v, char* tab)
 {
     switch (v)
     {
@@ -43,10 +45,12 @@ void affiche_SMTP(const uchar* data, size_t size, int serv, int v, char* tab)
         printf("| SMTP ");
         break;
     case 2:
-        printf("SMTP %s\n", (serv?"serveur->client":"client->serveur"));
+        printf("SMTP :  %s\n", (serv?"serveur->client":"client->serveur"));
         break;
     default:
+
         printf("%s\tSMTP\n", tab);
+        printf("%s%s\n", tab, (serv?"serveur->client":"client->serveur"));
         PRINTLINE();
         for (int i=0; i<size; i++){
             if (data[i]==13 && data[i+1]==10){

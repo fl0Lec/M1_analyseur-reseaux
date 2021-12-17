@@ -58,7 +58,6 @@ affiche_ETH(const struct ether_header *ethernet, int v, char *tab)
 
 void
 affiche_IP(const struct iphdr *ip, int v, char *tab)
-
 {
   //affiche IP src IP dst et protocol utiliser
   switch (v)
@@ -74,6 +73,7 @@ affiche_IP(const struct iphdr *ip, int v, char *tab)
     afficheIPaddr(ip->daddr);
     printf("\n");
     break;
+
   case 3 :
     PRINTLINE();
     printf("\t\tIP\n");
@@ -84,7 +84,7 @@ affiche_IP(const struct iphdr *ip, int v, char *tab)
       printf("%s|identification=%d|flags=%x|fragmentation offset=%d|\n", tab,
 	   ip->id, ip->frag_off>>14,ip->frag_off & ~(2<<14));
     else 
-      printf("%s|pas de gragmentation|\n",tab);
+      printf("%s|pas de fragmentation|\n",tab);
     printf("%s|TTL=%s|protocol=%d|header checksum=%x|\n", tab,
 	   (ip->ttl>0?"OK":"0"), ip->protocol, ip->check);
     printf("%s|source addresse = ", tab);
@@ -95,6 +95,7 @@ affiche_IP(const struct iphdr *ip, int v, char *tab)
     break;
   }
 }
+
 void 
 affiche_ARP(const struct arphdr *arp, int v, char *tab)
 {
@@ -119,7 +120,9 @@ affiche_ARP(const struct arphdr *arp, int v, char *tab)
   }
 }
 
-void affiche_UDP(const struct udphdr * udp, int v, char *tab){
+void 
+affiche_UDP(const struct udphdr * udp, int v, char *tab)
+{
   switch (v)
   {
   case 1 : 
@@ -137,7 +140,8 @@ void affiche_UDP(const struct udphdr * udp, int v, char *tab){
   }
 }
 
-void affiche_DNS(const struct dns_header* header, const u_char *packet, int v, char* tab)
+void 
+affiche_DNS(const struct dns_header* header, const u_char *packet, int v, char* tab)
 {
   int k=0;
   switch (v)
