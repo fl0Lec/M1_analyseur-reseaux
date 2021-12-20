@@ -144,10 +144,8 @@ size_t readDNS_name(const uchar* s, const uchar *start)
 {
   size_t i=0;
   while (s[i]!=0){
-    if (s[i]==0xc0){
-      readDNS_name(start+s[i+1]-sizeof(struct dns_header), start);
-      i+=2;
-    }
+    if (s[i]==0xc0)
+      return readDNS_name(start+s[i+1]-sizeof(struct dns_header), start);
     else {
       for (int j=1; j<=s[i];j++)
             printf("%c", s[i+j]);
