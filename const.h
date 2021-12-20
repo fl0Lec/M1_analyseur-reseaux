@@ -9,3 +9,7 @@
 #define UDP 0x11
 #define TCP 0x06
 
+//for TCP
+#define SMTP_port 0x1900
+#define HTTP_port 0x5000
+

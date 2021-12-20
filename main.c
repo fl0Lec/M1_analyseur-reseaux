@@ -5,14 +5,13 @@
 #include <net/ethernet.h>
 #include <netinet/ip.h>
 #include "affiche.h"
-//print err
-#define printErr(err) printf("erreur : %s\n",err);
+
 //pour open_live
 #define LENGTH_PKT_MAX 100
 #define PROMISC 0
 #define TO_MS 100
 //pour loop
-#define NP_PKT_CAPTURE 10
+#define NP_PKT_CAPTURE 0
 //mdp info tplri
 
 
@@ -81,14 +80,14 @@ main(int argc, char**argv, char** env)
   //ouvre pcap en live ou dans file
   if (ofile_path){
     if (!(pcap=pcap_open_offline(ofile_path, errbuf))){
-      printErr(errbuf);
-      return 3;
+      fprintf(stderr, "erreur open offline :\n%s\n", errbuf);
+      return -1;
     }
   }
   else {
     if (!(pcap=pcap_open_live(dev, LENGTH_PKT_MAX, PROMISC, TO_MS, errbuf))){
-      printErr(errbuf);
-      return 3;
+      fprintf(stderr, "erreur open live :\n%s\n", errbuf);
+      return -1;
     }
   }
 
@@ -96,12 +95,12 @@ main(int argc, char**argv, char** env)
   if (filter_exp){
     struct bpf_program filter; 
     if (pcap_compile(pcap, &filter, filter_exp, 0, netmask)==-1){
-      printf("%s\n",errbuf);
-      return 3;
+      printf("erreur comile : \n%s\n",errbuf);
+      return -1;
     }
     if(pcap_setfilter(pcap, &filter)==-1){
-      printf("%s\n",errbuf);
-      return 4;
+      printf("erreur filtre : \n%s\n",errbuf);
+      return -1;
     }
   }
 

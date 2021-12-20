@@ -17,7 +17,7 @@ got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 {
   int v=(int)*args;
   char tab[10];
-  printf("\n\nPacket : %d\n",cpt++);
+  printf("\n\nPacket : %d\n",++cpt);
   uint size=0;
   const struct ether_header *ethernet;
   ethernet = (struct ether_header*)(packet);
@@ -90,16 +90,16 @@ got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 	      affiche_TCP(tcp, v, tab);
         strcat(tab, "\t");
         size_t payload = REVUINT(ip->tot_len)-tcp->doff*4-ip->ihl*4;
-        if (tcp->source==0x1900 || tcp->dest==0x1900){
-          
-          affiche_SMTP(packet+size, payload, (tcp->source==0x1900), v, tab);
-        }
-      }
+        if (tcp->source==SMTP_port || tcp->dest==SMTP_port)
+          affiche_applicatif(SMTP, packet+size, payload, tcp->source==SMTP_port, v, tab);
+        if (tcp->source==HTTP_port || tcp->dest==HTTP_port)
+          affiche_applicatif(HTTP, packet+size, payload, tcp->source==HTTP_port, v, tab);
+      } 
       else {
         printf("protocol inconnu ou non implémenter\n");
       }
 
-
+      
       break;
     //pas IP mais ARP
     case ETHERTYPE_ARP: ;

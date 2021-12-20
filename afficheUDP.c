@@ -140,6 +140,24 @@ affiche_UDP(const struct udphdr * udp, int v, char *tab)
   }
 }
 
+size_t readDNS_name(const uchar* s, const uchar *start)
+{
+  size_t i=0;
+  while (s[i]!=0){
+    if (s[i]==0xc0){
+      readDNS_name(start+s[i+1]-sizeof(struct dns_header), start);
+      i+=2;
+    }
+    else {
+      for (int j=1; j<=s[i];j++)
+            printf("%c", s[i+j]);
+          i+=s[i]+1;
+          printf(".");
+    }
+  }
+  return i+1;
+} 
+
 void 
 affiche_DNS(const struct dns_header* header, const u_char *packet, int v, char* tab)
 {
@@ -154,14 +172,7 @@ affiche_DNS(const struct dns_header* header, const u_char *packet, int v, char* 
 
     for (int i=0; i<(header->QDcount>>8)+((header->QDcount&0xff)<<8); i++){
       //taille prochain champs
-      while (packet[k]!=0){
-        //parcours champs
-        for (int j=1; j<=packet[k];j++)
-          printf("%c", packet[k+j]);
-
-        k+=packet[k]+1;
-        printf(".");
-      }
+      k = readDNS_name(packet+k, packet);
       printf(" / ");
       //pour extra champs 
       k+=5;
@@ -169,56 +180,60 @@ affiche_DNS(const struct dns_header* header, const u_char *packet, int v, char* 
     printf("\n");
     break;
   default://3
-    printf("%s\tDNS\n%sid : %x| type : %s | number of question : %x | number of answer : %x\n", tab, tab,
-    (header->id>>8)+((header->id&0xff)<<8), 
+    printf("%s\tDNS\n%sid : %x| type : %s\n%snombre de question : %x | nnombre de reponse : %x\n%snombre serveur authoritaire %d | record aditionnel : %d\n", tab, tab,
+    REVUINT(header->id), 
     (header->flags&0x80?"reponse": "demande"), 
-    (header->QDcount>>8)+((header->QDcount&0xff)<<8), 
-    (header->ANcount>>8)+((header->ANcount&0xff)<<8));
-    char nom[100];
+    tab,
+    REVUINT(header->QDcount), 
+    REVUINT(header->ANcount),
+    tab,
+    REVUINT(header->NSCount),
+    REVUINT(header->ARCount)
+    );
     //pour chaque question
-    for (int i=0; i<(header->QDcount>>8)+((header->QDcount&0xff)<<8); i++){
+    for (int i=0; i<REVUINT(header->QDcount); i++){
       printf("%sDemande %d : ",tab, i+1);
       //taille prochain champs
-      while (packet[k]!=0){
-        //parcours champs
-        for (int j=1; j<=packet[k];j++){
-          printf("%c", packet[k+j]);
-          if (i==1) nom[k+j]=packet[k+j];
-        }
-        k+=packet[k]+1;
-        printf(".");
-        if (i==1) nom[k]='.';
-      }
-      nom[k]='\0';
+      k+=readDNS_name(packet+k, packet);
       printf("\n");
       //pour extra champs 
-      k+=5;
+      k+=4;
     }
     
-    for (int i=0; i<(header->ANcount>>8)+((header->ANcount&0xff)<<8); i++){
-      printf("%sReponse %d : ", tab, i+1);
+    //pour chaque reponse
+    for (int i=0; i<REVUINT(header->ANcount)+REVUINT(header->NSCount)+REVUINT(header->ARCount); i++){
+      printf("%s%s %d : ", tab, 
+      (i<REVUINT(header->ANcount)?"Reponse":REVUINT(header->ANcount)+REVUINT(header->NSCount)?"Autoritatif":"Autre"), 
+      (i<REVUINT(header->ANcount)?i+1:REVUINT(header->ANcount)+REVUINT(header->NSCount)?i+1-REVUINT(header->ANcount):i+1-REVUINT(header->ANcount)+REVUINT(header->NSCount)));
       struct dns_response r;
       //construction namuel par pointeur ne fonctionne pas pour raison inconnu
       r.name = packet[k]*16+packet[k+1];
+      printf("nom : ");
+      if ((r.name&0xff00)==0xc00)
+        readDNS_name(packet+(r.name&0xff)-sizeof(struct dns_header), packet);
+      else 
+        k+=readDNS_name(packet+k, packet);
+
       r.type = packet[k+2]*16+packet[k+3];
       r.class = packet[k+4]*16+packet[k+5];
       r.TTL = (packet[k+6]<<24)+(packet[k+7]<<16)+(packet[k+8]<<8)+packet[k+9]; 
       r.len = packet[k+10]*16+packet[k+11];
 
-      printf("nom : %s | type : %s | class : %s | ttl : %d | ",
-        nom+(r.name&0xff)-12, 
+      printf(" | type : %s | class : %s | ttl : %d | ",
         (r.type==1?"host address":r.type==2?"NS":r.type==5?"CNAME":"inconnu"),
         (r.class==1?"IN":"inconnu"), 
         r.TTL);
+
       switch (r.len)
       {
-      case 2:
-        printf("reference to : %s\n",nom+packet[k+13]-12);
-        break;
       case 4:
-        printf("addresse :");
+        printf("addresse : ");
         afficheAddr(packet+k+12, 4);
+        break;
       default:
+        printf("reference to : ");
+        readDNS_name(packet+k+12, packet);
+        printf("\n");
         break;
       }
       k+=12+r.len;

@@ -16,6 +16,16 @@ struct arp_adr
     uchar* add;
 };
 
+enum applicatif {SMTP, POP, IMAP, HTTP, FTP, TELNET};
+static char * const app_names[] = {
+	[SMTP] = "SMTP",
+	[POP] = "POP",
+	[IMAP] = "IMAP",
+	[HTTP] = "HTTP",
+    [FTP] = "FTP",
+    [TELNET] = "TELNET"
+};
+
 
 void afficheAddr(const uchar*, int);
 
@@ -32,7 +42,9 @@ void affiche_TCP(const struct tcphdr *, int, char *tab);
 void affiche_Bootp(const struct bootp*, int, const u_char*, char *tab);
 void affiche_DNS(const struct dns_header* header, const u_char *packet,int v, char* tab);
 
-void affiche_SMTP(const uchar* data, size_t size,int ser, int v, char* tab);
+void affiche_applicatif(enum applicatif app,const uchar* data, size_t size,int serv, int v, char* tab);
 
+void affiche_SMTP(const uchar* data, size_t size,int ser, int v, char* tab);
+void affiche_HTML(const uchar* data, size_t size, int serv, int v, char* tab);
 
 #endif

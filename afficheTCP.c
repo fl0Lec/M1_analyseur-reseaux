@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "affiche.h"
 
-#define ASCII(c) ((c>=' ' && c<=126)?c:'.')
+#define ASCII(c) (c<=126)?c:'.'
 
 void 
 affiche_TCP(const struct tcphdr* tcp, int v, char *tab){
@@ -21,7 +21,7 @@ affiche_TCP(const struct tcphdr* tcp, int v, char *tab){
     if (tcp_flag & TH_FIN)
       printf("FIN ");
     if (tcp_flag & TH_SYN)
-      printf("SYN");
+      printf("SYN ");
     if (tcp_flag & TH_RST)
       printf("RST "); 
     if (tcp_flag & TH_PUSH)
@@ -63,5 +63,63 @@ affiche_SMTP(const uchar* data, size_t size, int serv, int v, char* tab)
         printf("\n");
     break;
     }
+}
 
+void 
+affiche_HTML(const uchar* data, size_t size, int serv, int v, char* tab)
+{
+  switch (v)
+  {
+  case 1:
+    printf("| HTML\n");
+    break;
+  case 2:
+    printf("HTML : %s\n", (serv?"serveur->client":"client->serveur"));
+    break;
+  default:
+    printf("%s\tHTTP : %s\n", tab,(serv?"serveur->client":"client->serveur"));
+    PRINTLINE();
+    for (int i=0; i<size; i++){
+            if (data[i]==13 && data[i+1]==10){
+                printf("\n");
+                i+=1;
+            }
+            else 
+                printf("%c",ASCII(data[i]));
+        }
+        printf("\n");
+    break;
+  }
+}
+
+void 
+affiche_applicatif(enum applicatif app, const uchar* data, size_t size,int serv, int v, char* tab)
+{
+  char* nom = app_names[app];
+  switch (v)
+  {
+  case 1:
+    printf(" | %s\n", nom);
+    break;
+  case 2:
+    printf("HTML : %s\n", (serv?"serveur->client":"client->serveur"));
+    break;
+  default:
+    printf("%s\t%s\n%s%s\n", tab, nom, tab,(serv?"serveur->client":"client->serveur"));
+    if (size==0){
+      printf("%spas de contenue applicatif dans ce paquet\n", tab);
+      return;
+    }
+    PRINTLINE();
+    for (int i=0; i<size; i++){
+            if (data[i]==13 && data[i+1]==10){
+                printf("\n");
+                i+=1;
+            }
+            else 
+                printf("%c",ASCII(data[i]));
+        }
+        printf("\n");
+    break;
+  }
 }
