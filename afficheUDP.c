@@ -63,7 +63,7 @@ affiche_IP(const struct iphdr *ip, int v, char *tab)
   switch (v)
   {
   case 1:
-    printf("IP | ");
+    printf("| IP ");
     break;
   
   case 2 :
@@ -126,7 +126,7 @@ affiche_UDP(const struct udphdr * udp, int v, char *tab)
   switch (v)
   {
   case 1 : 
-    printf("UDP | ");
+    printf("| UDP ");
     break;
   case 2 :
     printf("UDP : port source : %d | port destination : %d\n",

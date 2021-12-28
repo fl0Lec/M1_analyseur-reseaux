@@ -108,6 +108,7 @@ main(int argc, char**argv, char** env)
   verbose = (verbose==255?2:verbose);
   printf("commence capture sur %s  avec verbose de %d et filtrer %s\n",dev, verbose, filter_exp);
   pcap_loop(pcap, NP_PKT_CAPTURE, got_packet, &verbose);
+  printf("\x1b[0m");
   
   return 0;
 }

@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include "affiche.h"
 
-#define ASCII(c) (c<=126)?c:'.'
-
+#define ASCII(c) (c<=126)?c:'-'
+#define MIN(a, b) (a<b?a:b)
 void 
 affiche_TCP(const struct tcphdr* tcp, int v, char *tab){
   switch (v)
   {
   case 1 :
-    printf("TCP | ");
+    printf("| TCP ");
     break;
   case 2 :
     printf("TCP : source port %d | destination port %d\n", 
@@ -37,72 +37,29 @@ affiche_TCP(const struct tcphdr* tcp, int v, char *tab){
 }
 
 void 
-affiche_SMTP(const uchar* data, size_t size, int serv, int v, char* tab)
-{
-    switch (v)
-    {
-    case 1:
-        printf("| SMTP ");
-        break;
-    case 2:
-        printf("SMTP :  %s\n", (serv?"serveur->client":"client->serveur"));
-        break;
-    default:
-
-        printf("%s\tSMTP\n", tab);
-        printf("%s%s\n", tab, (serv?"serveur->client":"client->serveur"));
-        PRINTLINE();
-        for (int i=0; i<size; i++){
-            if (data[i]==13 && data[i+1]==10){
-                printf("\n");
-                i+=1;
-            }
-            else 
-                printf("%c",ASCII(data[i]));
-        }
-        printf("\n");
-    break;
-    }
-}
-
-void 
-affiche_HTML(const uchar* data, size_t size, int serv, int v, char* tab)
-{
-  switch (v)
-  {
-  case 1:
-    printf("| HTML\n");
-    break;
-  case 2:
-    printf("HTML : %s\n", (serv?"serveur->client":"client->serveur"));
-    break;
-  default:
-    printf("%s\tHTTP : %s\n", tab,(serv?"serveur->client":"client->serveur"));
-    PRINTLINE();
-    for (int i=0; i<size; i++){
-            if (data[i]==13 && data[i+1]==10){
-                printf("\n");
-                i+=1;
-            }
-            else 
-                printf("%c",ASCII(data[i]));
-        }
-        printf("\n");
-    break;
-  }
-}
-
-void 
 affiche_applicatif(enum applicatif app, const uchar* data, size_t size,int serv, int v, char* tab)
 {
   char* nom = app_names[app];
   switch (v)
   {
   case 1:
-    printf(" | %s\n", nom);
+    printf("| %s\n", nom);
     break;
   case 2:
-    printf("HTML : %s\n", (serv?"serveur->client":"client->serveur"));
+    printf("%s : %s : ",nom, (serv?"serveur->client":"client->serveur"));
+    if (size==0){
+      printf(" pas de contenue applicatif dans ce paquet\n");
+      return;
+    }
+    else {
+      printf("\x1b[36m");
+      for (int i=0; i<MIN(20, size); i++){
+        if (data[i]==0x0d)
+          break;
+        printf("%c",ASCII(data[i]));
+      }
+      printf("\x1b[0m\n");
+    }
     break;
   default:
     printf("%s\t%s\n%s%s\n", tab, nom, tab,(serv?"serveur->client":"client->serveur"));
@@ -111,15 +68,12 @@ affiche_applicatif(enum applicatif app, const uchar* data, size_t size,int serv,
       return;
     }
     PRINTLINE();
+    printf("contenu :\n\x1b[36m");
     for (int i=0; i<size; i++){
-            if (data[i]==13 && data[i+1]==10){
-                printf("\n");
-                i+=1;
-            }
-            else 
-                printf("%c",ASCII(data[i]));
-        }
-        printf("\n");
+      printf("%c",ASCII(data[i]));
+      }
+    printf("\x1b[0m\n");
+    
     break;
   }
 }
