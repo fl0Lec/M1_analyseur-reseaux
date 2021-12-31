@@ -110,10 +110,10 @@ affiche_ARP(const struct arphdr *arp, int v, char *tab)
   ((arp->ar_op>>8==ARPOP_REQUEST || arp->ar_op>>8==ARPOP_RREQUEST)?"request":(arp->ar_op>>8==ARPOP_REPLY || arp->ar_op>>8==ARPOP_RREPLY)?"reply":"autre")
     );
     break;
-  case 2 :
   case 3 :
-    printf("%s%s : type : %s | protocol : %s | operation : %s %x\n",
-    tab,
+    printf("%s", tab);
+  case 2 :
+    printf("%s : type : %s | protocol : %s | operation : %s %x\n",
     (arp->ar_op>>8<ARPOP_RREQUEST?"ARP":"RARP"),
     (arp->ar_hln==ETH_ALEN?"ethernet":"autre"), 
     (arp->ar_pln==4?"IPv4":"autres"),
