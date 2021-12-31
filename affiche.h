@@ -16,14 +16,16 @@ struct arp_adr
     uchar* add;
 };
 
-enum applicatif {SMTP, POP, IMAP, HTTP, FTP, TELNET};
+enum applicatif {SMTP, POP, IMAP, HTTP, FTP_CMD, FTP_DATA, TFTP, TELNET};
 static char * const app_names[] = {
-	[SMTP] = "SMTP",
-	[POP] = "POP",
-	[IMAP] = "IMAP",
-	[HTTP] = "HTTP",
-    [FTP] = "FTP",
-    [TELNET] = "TELNET"
+	[SMTP] =	"SMTP",
+	[POP] =		"POP",
+	[IMAP] = 	"IMAP",
+	[HTTP] = 	"HTTP",
+    [FTP_CMD] = "FTP connexion de commande",
+	[FTP_DATA] ="FTP connexion de donnée",
+	[TFTP] = 	"Trivial FTP",
+    [TELNET] = 	"TELNET"
 };
 
 
@@ -46,5 +48,9 @@ void affiche_applicatif(enum applicatif app,const uchar* data, size_t size,int s
 
 void affiche_SMTP(const uchar* data, size_t size,int ser, int v, char* tab);
 void affiche_HTML(const uchar* data, size_t size, int serv, int v, char* tab);
+
+void affiche_TFTP(const uchar* data, int size, int serv, int v, char* tab);
+
+void affiche_TELNET(const uchar* data, size_t size, int serv, int v, char* tab);
 
 #endif

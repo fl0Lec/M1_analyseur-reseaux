@@ -6,6 +6,7 @@
 #include "afficheDHCP.c"
 
 #define ABSA(a) (a<0?-a+2:a)
+#define ASCII(c) (c<=126)?c:'-'
 
 void 
 afficheAddr(const uchar* a, int size) //pas necessairement arp_adr mais une struct qui contient char* avec les adresses
@@ -41,6 +42,8 @@ afficheIPaddr(uint32_t addr)
 void
 affiche_ETH(const struct ether_header *ethernet, int v, char *tab)
 {
+  if (v==1)
+    printf(" ETHERNET ");
   if (v==2 || v==3){
     printf("ETHERNET : src=");
     for (int i=0; i<ETH_ALEN-1;i++)
@@ -129,7 +132,7 @@ affiche_UDP(const struct udphdr * udp, int v, char *tab)
     printf("| UDP ");
     break;
   case 2 :
-    printf("UDP : port source : %d | port destination : %d\n",
+    printf("UDP : port source : %x | port destination : %x\n",
     REVUINT(udp->source), REVUINT(udp->dest));
     break;
   case 3 :
@@ -140,7 +143,8 @@ affiche_UDP(const struct udphdr * udp, int v, char *tab)
   }
 }
 
-size_t readDNS_name(const uchar* s, const uchar *start)
+size_t 
+readDNS_name(const uchar* s, const uchar *start)
 {
   size_t i=0;
   while (s[i]!=0){
@@ -163,7 +167,7 @@ affiche_DNS(const struct dns_header* header, const u_char *packet, int v, char* 
   switch (v)
   {
   case 1:
-    printf("| DNS : %s ", (header->flags&0x80?"reponse": "demande"));
+    printf("| DNS : %s \n", (header->flags&0x80?"reponse": "demande"));
     break;
   case 2: 
     printf("DNS : %s : demande sur ", (header->flags&0x80?"reponse": "demande"));
@@ -239,3 +243,71 @@ affiche_DNS(const struct dns_header* header, const u_char *packet, int v, char* 
       break;
   }
 } 
+
+void 
+affiche_TFTP(const uchar* data, int size,  int serv, int v, char* tab)
+{
+  char* nom = app_names[TFTP];
+  uint32_t op, block;
+  op = data[0]*16+data[1];
+  block = data[2]*16+data[3];
+  switch (v)
+  {
+  case 1:
+  case 2:
+    printf("%s : %s : ",nom, (serv?"serveur->client":"client->serveur "));
+    switch (op)
+    {
+    case 1:
+      printf("Read Request : %s", data+2);
+      break;
+    case 2 :
+      printf("Write Request : %s", data+2);
+      break;
+    case 3:
+      printf("Data : block %d, %d octet", block, size-4);
+      break;
+    case 4 :
+      printf("Ack : block %d", block);
+      break;
+    case 5 :
+      printf("Erreur %s", data+2);
+      break;
+    default :
+      printf("Operation code non reconnu");
+      break;
+    }
+    break;
+  default:
+    printf("%s\t%s\n%s%s\n", tab, nom, tab,(serv?"serveur->client":"client->serveur"));
+    switch (op)
+    {
+    case 1:
+      printf("%sRead Request : %s\n%smode : %s\n",tab, data+2, tab, data+3+strlen((char*)data+2));
+      break;
+    case 2 :
+      printf("%sWrite Request : %s\n%smode : %s\n",tab, data+2,tab, data+3+strlen((char*)data+2));
+      break;
+    case 3:
+      printf("%sData : block %d\n",tab, block);
+      PRINTLINE()
+      printf("contenu :\n\x1b[36m");
+      for (int i=4; i<size;i++){
+        printf("%c",ASCII(data[i]));
+      }
+      printf("\n\x1b[0m");
+      break;
+    case 4 :
+      printf("%sAck : block %d",tab, block);
+      break;
+    case 5 :
+      printf("%sErreur %s",tab, data+2);
+      break;
+    default :
+      printf("Operation code non reconnu");
+      break;
+    }
+    
+    break;
+  }
+}
