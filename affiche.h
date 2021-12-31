@@ -19,7 +19,7 @@ struct arp_adr
 enum applicatif {SMTP, POP, IMAP, HTTP, FTP_CMD, FTP_DATA, TFTP, TELNET};
 static char * const app_names[] = {
 	[SMTP] =	"SMTP",
-	[POP] =		"POP",
+	[POP] =		"POP3",
 	[IMAP] = 	"IMAP",
 	[HTTP] = 	"HTTP",
     [FTP_CMD] = "FTP connexion de commande",

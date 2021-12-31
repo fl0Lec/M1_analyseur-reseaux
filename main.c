@@ -19,7 +19,7 @@
 #include "affiche.h"
 #include "capture.h"
 
-
+#define USAGE printf("./mydump [parametre]\n\"-v\"niveau de verbosite\n\"-o fichier\" fichier a ouvrir en mode oflline\n\"-i interface\" interface a ouvrir, mode online\n\"-f filtre\" filtre appilquer (penzez a mettre des guillement)\n\"-h\" affiche cette aide\n");
 int
 main(int argc, char**argv, char** env)
 {  
@@ -28,30 +28,36 @@ main(int argc, char**argv, char** env)
   pcap_if_t *alldev=0;
   pcap_t *pcap=0;
   u_char verbose=-1;
-  if ((argc-1)%2){
-    printf("erreur attend nom et paramètre -h");
-    return 2;
-  }
    
-  for (int i=1; i<argc-1;i++){
+  for (int i=1; i<argc;i++){
     if (strcmp(argv[i], "-i")==0){
-      dev = argv[i+1];
+      dev = argv[++i];
     }
     else if (strcmp(argv[i],"-o")==0){
-      ofile_path = argv[i+1];
+      ofile_path = argv[++i];
+
     }
     else if (strcmp(argv[i], "-f")==0){
-      filter_exp = argv[i+1];
+      filter_exp = argv[++i];
     }
     else if (strcmp(argv[i], "-v")==0){
       if (verbose!=(u_char)-1){
         printf("erreur vous avez deja defini verbose\n");
-        return 6;
+        return -1;
       }
       else if ((verbose=atoi(argv[i+1]))>3 || verbose<1){
         printf("erreur verbose compris entre 1 et 3\n");
-        return 7;
+        return -1;
       }
+      i++;
+    }
+    else if (strcmp(argv[i], "-h")==0){
+      USAGE
+      return 0;
+    }
+    else {
+      printf("erreur argument %d -h pour aide\n", i);
+      return -1;
     }
   }
 
@@ -59,11 +65,11 @@ main(int argc, char**argv, char** env)
   if (!dev){
     if (pcap_findalldevs(&alldev, errbuf)==-1){
     printf("%s",errbuf);
-    return 1;
+    return -1;
     }
     if (alldev==NULL){
       printf("no device found\n");
-      return 10;
+      return -1;
     }
     else{
       dev = alldev->name;
